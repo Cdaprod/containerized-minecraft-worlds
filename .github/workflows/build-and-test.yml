@@ -1,0 +1,42 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Run get_worlds.py
+      run: |
+        mkdir -p worlds
+        docker build -t minecraft-setup .
+        docker run --rm -v ${{ github.workspace }}/worlds:/data/worlds minecraft-setup
+
+    - name: Validate worlds directory
+      run: |
+        ls -l worlds
+        [ -d "worlds/expansive_fantasy_survival" ] && echo "expansive_fantasy_survival world exists"
+        [ -d "worlds/kingdom" ] && echo "kingdom world exists"
+        [ -d "worlds/saturns_orbit" ] && echo "saturns_orbit world exists"
+        [ -d "worlds/bessemer_city" ] && echo "bessemer_city world exists"
+        [ -d "worlds/legend_of_the_blue_tide" ] && echo "legend_of_the_blue_tide world exists"
