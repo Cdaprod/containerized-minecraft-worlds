@@ -1,7 +1,6 @@
 import os
 import requests
 import zipfile
-import shutil
 import mimetypes
 
 # URLs to download the Minecraft world maps
@@ -30,6 +29,7 @@ def download_file(url, dest_path):
 def extract_file(file_path, extract_to):
     # Determine the file type
     file_type, encoding = mimetypes.guess_type(file_path)
+    print(f"File type of {file_path}: {file_type}")
     if file_type == 'application/zip':
         with zipfile.ZipFile(file_path, 'r') as zip_ref:
             zip_ref.extractall(extract_to)
@@ -55,8 +55,14 @@ def setup_world(world_name, url):
         os.remove(file_path)
 
         print(f"Setup complete for {world_name}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading {url}: {e}")
+    except zipfile.BadZipFile as e:
+        print(f"Error extracting {file_path}: {e}")
+    except ValueError as e:
+        print(f"Unsupported file type for {world_name}: {e}")
     except Exception as e:
-        print(f"Error setting up world {world_name}: {e}")
+        print(f"Unexpected error: {e}")
 
 def main():
     try:
