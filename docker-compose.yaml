@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  setup:
+    build: .
+    volumes:
+      - ./worlds:/data/worlds
+    command: ["python", "./get_worlds.py"]
+
+  expansive_fantasy_survival:
+    image: itzg/minecraft-server
+    container_name: expansive_fantasy_survival_server
+    ports:
+      - "25565:25565"
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - ./worlds/expansive_fantasy_survival:/data/world
+
+  kingdom:
+    image: itzg/minecraft-server
+    container_name: kingdom_server
+    ports:
+      - "25566:25565"
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - ./worlds/kingdom:/data/world
+
+  saturns_orbit:
+    image: itzg/minecraft-server
+    container_name: saturns_orbit_server
+    ports:
+      - "25567:25565"
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - ./worlds/saturns_orbit:/data/world
+
+  bessemer_city:
+    image: itzg/minecraft-server
+    container_name: bessemer_city_server
+    ports:
+      - "25568:25565"
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - ./worlds/bessemer_city:/data/world
+
+  legend_of_the_blue_tide:
+    image: itzg/minecraft-server
+    container_name: legend_of_the_blue_tide_server
+    ports:
+      - "25569:25565"
+    environment:
+      EULA: "TRUE"
+    volumes:
+      - ./worlds/legend_of_the_blue_tide:/data/world
