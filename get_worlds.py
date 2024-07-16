@@ -1,6 +1,8 @@
 import os
 import requests
 import zipfile
+import shutil
+import mimetypes
 
 # URLs to download the Minecraft world maps
 world_urls = {
@@ -14,31 +16,26 @@ world_urls = {
 # Base directory to store the world maps
 base_dir = "/data/worlds"
 
-def download_and_extract(url, extract_to):
-    try:
-        # Download the file
-        response = requests.get(url, stream=True)
-        response.raise_for_status()  # Raise HTTPError for bad responses
-        zip_path = os.path.join(extract_to, 'temp.zip')
-        with open(zip_path, 'wb') as file:
-            for chunk in response.iter_content(chunk_size=1024):
-                file.write(chunk)
-        
-        # Extract the zip file
-        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+def download_file(url, dest_path):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    response = requests.get(url, headers=headers, stream=True)
+    response.raise_for_status()  # Raise HTTPError for bad responses
+    with open(dest_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size=1024):
+            file.write(chunk)
+    return dest_path
+
+def extract_file(file_path, extract_to):
+    # Determine the file type
+    file_type, encoding = mimetypes.guess_type(file_path)
+    if file_type == 'application/zip':
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
             zip_ref.extractall(extract_to)
-        
-        # Remove the zip file after extraction
-        os.remove(zip_path)
-    except requests.exceptions.RequestException as e:
-        print(f"Error downloading {url}: {e}")
-        raise
-    except zipfile.BadZipFile as e:
-        print(f"Error extracting {zip_path}: {e}")
-        raise
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-        raise
+    else:
+        print(f"Unsupported file type for {file_path}: {file_type}")
+        raise ValueError(f"Unsupported file type: {file_type}")
 
 def setup_world(world_name, url):
     try:
@@ -47,9 +44,16 @@ def setup_world(world_name, url):
         if not os.path.exists(world_dir):
             os.makedirs(world_dir)
         
-        # Download and extract the world
-        download_and_extract(url, world_dir)
+        # Download the world file
+        file_path = os.path.join(world_dir, 'temp.file')
+        download_file(url, file_path)
+
+        # Extract the file if it is a zip file
+        extract_file(file_path, world_dir)
         
+        # Remove the downloaded file after extraction
+        os.remove(file_path)
+
         print(f"Setup complete for {world_name}")
     except Exception as e:
         print(f"Error setting up world {world_name}: {e}")
